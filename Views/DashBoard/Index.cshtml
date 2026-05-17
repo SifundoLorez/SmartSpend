@@ -1,0 +1,942 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+    .dashboard-main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-add:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            color: #fff;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+    /* Summary cards */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .summary-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        padding: 24px;
+        transition: all 0.3s ease;
+    }
+
+        .summary-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+    .card-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.45);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-amount {
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .card-sub {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.35);
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .card-income .card-amount {
+        color: #10b981;
+    }
+
+    .card-expense .card-amount {
+        color: #f87171;
+    }
+
+    .card-balance .card-amount {
+        color: #6366f1;
+    }
+
+    /* Charts and Subscriptions Row */
+    .charts-subs-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+    .chart-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .chart-title i {
+            color: #6366f1;
+            font-size: 16px;
+        }
+
+    .pie-chart-container {
+        max-width: 280px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .bar-chart-container {
+        width: 100%;
+        height: 280px;
+        position: relative;
+    }
+
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Upcoming Subscriptions Card */
+    .subs-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .subs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+        .subs-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .subs-header a {
+            font-size: 13px;
+            color: #6366f1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+            .subs-header a:hover {
+                color: #8b5cf6;
+                text-decoration: underline;
+            }
+
+    .subs-list {
+        max-height: 320px;
+        overflow-y: auto;
+    }
+
+    .subs-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background 0.2s;
+    }
+
+        .subs-row:last-child {
+            border-bottom: none;
+        }
+
+        .subs-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+    .subs-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 2;
+    }
+
+    /* Brand-specific icon styles */
+    .subs-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+        .subs-icon.spotify {
+            background: #1DB954;
+            color: white;
+        }
+
+        .subs-icon.youtube {
+            background: #FF0000;
+            color: white;
+        }
+
+        .subs-icon.netflix {
+            background: #E50914;
+            color: white;
+        }
+
+        .subs-icon.apple-music {
+            background: #FA243C;
+            color: white;
+        }
+
+        .subs-icon.showmax {
+            background: #ED1C24;
+            color: white;
+        }
+
+        .subs-icon.disney {
+            background: #0063e5;
+            color: white;
+        }
+
+        .subs-icon.dstv {
+            background: #0066CC;
+            color: white;
+        }
+
+        .subs-icon.prime {
+            background: #00A8E1;
+            color: white;
+        }
+
+        .subs-icon.default {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+    .subs-info {
+        flex: 1;
+    }
+
+    .subs-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .subs-date {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .subs-frequency {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 100px;
+        background: rgba(99, 102, 241, 0.12);
+        color: #a5b4fc;
+    }
+
+    .subs-amount {
+        text-align: right;
+    }
+
+    .subs-price {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f87171;
+    }
+
+    .subs-days {
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 3px;
+    }
+
+    .days-urgent {
+        color: #f87171;
+    }
+
+    .days-warning {
+        color: #fbbf24;
+    }
+
+    .days-safe {
+        color: #34d399;
+    }
+
+    .empty-subs {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.35);
+    }
+
+        .empty-subs i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: block;
+            opacity: 0.5;
+        }
+
+    /* Insights */
+    .insights-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+
+    .insights-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .insights-title i {
+            color: #8b5cf6;
+        }
+
+    .insight-item {
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.75);
+        margin-bottom: 10px;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .insight-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(99, 102, 241, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6366f1;
+    }
+
+    .no-insights {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.35);
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+        .no-insights i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+    /* Recent transactions */
+    .recent-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 40px;
+    }
+
+    .recent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+        .recent-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recent-header a {
+            font-size: 13px;
+            color: #6366f1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+            .recent-header a:hover {
+                color: #8b5cf6;
+                text-decoration: underline;
+            }
+
+    .recent-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background 0.2s;
+    }
+
+        .recent-row:last-child {
+            border-bottom: none;
+        }
+
+        .recent-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+    .r-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 2;
+    }
+
+    .r-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .r-icon-income {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+
+    .r-icon-expense {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+    }
+
+    .r-info {
+        flex: 1;
+    }
+
+    .r-desc {
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .r-date {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .r-cat {
+        flex: 1;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .r-amount {
+        font-size: 16px;
+        font-weight: 700;
+        text-align: right;
+    }
+
+        .r-amount.income {
+            color: #10b981;
+        }
+
+        .r-amount.expense {
+            color: #f87171;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.35);
+    }
+
+        .empty-state .empty-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .dashboard-main {
+            padding: 24px 24px;
+        }
+
+        .charts-subs-row {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .pie-chart-container {
+            max-width: 260px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-main {
+            padding: 20px 16px;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .recent-row {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .r-left {
+            flex: 100%;
+        }
+
+        .r-cat, .r-amount {
+            flex: auto;
+        }
+    }
+</style>
+
+@functions {
+    public static string GetSubIconClass(string serviceName)
+    {
+        if (string.IsNullOrEmpty(serviceName)) return "default";
+        string name = serviceName.ToLower();
+        if (name.Contains("spotify")) return "spotify";
+        if (name.Contains("youtube")) return "youtube";
+        if (name.Contains("netflix")) return "netflix";
+        if (name.Contains("apple")) return "apple-music";
+        if (name.Contains("showmax")) return "showmax";
+        if (name.Contains("disney")) return "disney";
+        if (name.Contains("dstv")) return "dstv";
+        if (name.Contains("prime") || name.Contains("amazon")) return "prime";
+        return "default";
+    }
+
+    public static string GetSubIconHtml(string serviceName)
+    {
+        if (string.IsNullOrEmpty(serviceName)) return "<i class='fas fa-rss'></i>";
+        string name = serviceName.ToLower();
+        if (name.Contains("spotify")) return "<i class='fab fa-spotify'></i>";
+        if (name.Contains("youtube")) return "<i class='fab fa-youtube'></i>";
+        if (name.Contains("netflix")) return "<i class='fas fa-film'></i>";
+        if (name.Contains("apple")) return "<i class='fab fa-apple'></i>";
+        if (name.Contains("showmax")) return "<i class='fas fa-tv'></i>";
+        if (name.Contains("disney")) return "<i class='fas fa-star'></i>";
+        if (name.Contains("dstv")) return "<i class='fas fa-satellite-dish'></i>";
+        if (name.Contains("prime") || name.Contains("amazon")) return "<i class='fab fa-amazon'></i>";
+        return "<i class='fas fa-rss'></i>";
+    }
+}
+
+<div class="dashboard-main">
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-waveform" style="color: #6366f1;"></i>
+                Good day, @ViewBag.UserName
+            </h1>
+            <p>
+                <i class="fas fa-calendar-alt"></i>
+                @DateTime.Now.ToString("MMMM yyyy") overview
+            </p>
+        </div>
+        <a href="/Transaction/Add" class="btn-add">
+            <i class="fas fa-plus-circle"></i> Add Transaction
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card card-income">
+            <div class="card-label">
+                <i class="fas fa-arrow-trend-up"></i> Total Income
+            </div>
+            <div class="card-amount">R @string.Format("{0:N2}", ViewBag.TotalIncome)</div>
+            <div class="card-sub">
+                <i class="fas fa-chart-line"></i> This month
+            </div>
+        </div>
+        <div class="summary-card card-expense">
+            <div class="card-label">
+                <i class="fas fa-arrow-trend-down"></i> Total Expenses
+            </div>
+            <div class="card-amount">R @string.Format("{0:N2}", ViewBag.TotalExpenses)</div>
+            <div class="card-sub">
+                <i class="fas fa-chart-line"></i> This month
+            </div>
+        </div>
+        <div class="summary-card card-balance">
+            <div class="card-label">
+                <i class="fas fa-wallet"></i> Balance
+            </div>
+            <div class="card-amount">R @string.Format("{0:N2}", ViewBag.Balance)</div>
+            <div class="card-sub">
+                <i class="fas fa-calculator"></i> Income – Expenses
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Upcoming Subscriptions Row -->
+    <div class="charts-subs-row">
+        <!-- Pie Chart -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i> Spending by Category
+            </div>
+            <div class="pie-chart-container">
+                <canvas id="pieChart" width="280" height="280"></canvas>
+            </div>
+        </div>
+
+        <!-- Upcoming Subscriptions -->
+        <div class="subs-card">
+            <div class="subs-header">
+                <h2>
+                    <i class="fas fa-rss" style="color: #6366f1;"></i>
+                    Upcoming Billing
+                </h2>
+                <a href="/Subscription/Index">
+                    Manage <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            @{
+                var upcomingSubs = ViewBag.UpcomingSubs as System.Collections.Generic.List<SmartSpend.Models.Subscription>;
+            }
+            @if (upcomingSubs == null || !upcomingSubs.Any())
+            {
+                <div class="empty-subs">
+                    <i class="fas fa-rss"></i>
+                    <p>No upcoming subscriptions</p>
+                    <small>Add subscriptions to track your recurring bills</small>
+                </div>
+            }
+            else
+            {
+                <div class="subs-list">
+                    @foreach (var s in upcomingSubs)
+                    {
+                        int daysLeft = (s.NextBillingDate - DateTime.Today).Days;
+                        string daysClass = daysLeft <= 3 ? "days-urgent"
+                                         : daysLeft <= 7 ? "days-warning"
+                                         : "days-safe";
+                        string daysText = daysLeft == 0 ? "Due today!"
+                                        : daysLeft == 1 ? "Tomorrow!"
+                                        : $"{daysLeft} days left";
+
+                        string iconClass = GetSubIconClass(s.DisplayName);
+                        string iconHtml = GetSubIconHtml(s.DisplayName);
+
+                        <div class="subs-row">
+                            <div class="subs-left">
+                                <div class="subs-icon @iconClass">
+                                    @Html.Raw(iconHtml)
+                                </div>
+                                <div class="subs-info">
+                                    <div class="subs-name">@s.DisplayName</div>
+                                    <div class="subs-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        @s.NextBillingDate.ToString("dd MMM yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="subs-frequency">
+                                    <i class="fas fa-sync-alt"></i> @s.Frequency
+                                </span>
+                            </div>
+                            <div class="subs-amount">
+                                <div class="subs-price">R @s.Amount.ToString("N2")</div>
+                                <div class="subs-days @daysClass">
+                                    <i class="fas fa-clock"></i> @daysText
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Smart Insights -->
+    <div class="insights-card">
+        <div class="insights-title">
+            <i class="fas fa-brain"></i> Smart Insights
+        </div>
+        @{
+            var insights = ViewBag.Insights as System.Collections.Generic.List<string>;
+        }
+        @if (insights != null && insights.Count > 0)
+        {
+            foreach (var insight in insights)
+            {
+                <div class="insight-item">
+                    <div class="insight-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>@Html.Raw(insight)</div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-insights">
+                <i class="fas fa-chart-line"></i>
+                <p>Add transactions to see personalized insights</p>
+                <small style="color: rgba(255,255,255,0.25);">Your spending patterns will appear here</small>
+            </div>
+        }
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="recent-card">
+        <div class="recent-header">
+            <h2>
+                <i class="fas fa-clock" style="color: #6366f1;"></i>
+                Recent Transactions
+            </h2>
+            <a href="/Transaction/Index">
+                View all <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        @{
+            var recent = ViewBag.Recent as System.Collections.Generic.IEnumerable<SmartSpend.Models.Transaction>;
+        }
+
+        @if (recent == null || !recent.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-receipt"></i></div>
+                <p>No transactions yet — add your first one!</p>
+                <a href="/Transaction/Add" class="btn-add" style="display: inline-block; margin-top: 16px; padding: 8px 20px; font-size: 13px;">
+                    <i class="fas fa-plus"></i> Add Transaction
+                </a>
+            </div>
+        }
+        else
+        {
+            foreach (var t in recent)
+            {
+                string categoryName = "Uncategorized";
+                string categoryIcon = "fas fa-tag";
+                string categoryIconClass = "r-icon-expense";
+
+                if (t.Category != null)
+                {
+                    categoryName = t.Category.Name ?? "Uncategorized";
+                    categoryIcon = !string.IsNullOrEmpty(t.Category.Icon) ? t.Category.Icon : "fas fa-tag";
+                }
+
+                if (t.Type == "Income")
+                {
+                    categoryIconClass = "r-icon-income";
+                }
+                else
+                {
+                    categoryIconClass = "r-icon-expense";
+                }
+
+                <div class="recent-row">
+                    <div class="r-left">
+                        <div class="r-icon @categoryIconClass">
+                            <i class="@categoryIcon"></i>
+                        </div>
+                        <div class="r-info">
+                            <div class="r-desc">
+                                @(string.IsNullOrEmpty(t.Description) ? categoryName : t.Description)
+                            </div>
+                            <div class="r-date">
+                                <i class="fas fa-calendar-day"></i>
+                                @t.Date.ToString("dd MMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="r-cat">
+                        <i class="fas fa-tag" style="margin-right: 4px; opacity: 0.6;"></i>
+                        @categoryName
+                    </div>
+                    <div class="r-amount @(t.Type == "Income" ? "income" : "expense")">
+                        @(t.Type == "Income" ? "+" : "-") R @t.Amount.ToString("N2")
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+    var pieLabels  = @Html.Raw(ViewBag.ChartLabels ?? "[]");
+    var pieData    = @Html.Raw(ViewBag.ChartData   ?? "[]");
+    var barMonths  = @Html.Raw(ViewBag.TrendMonths ?? "[]");
+    var barIncome  = @Html.Raw(ViewBag.TrendIncome ?? "[]");
+    var barExpense = @Html.Raw(ViewBag.TrendExpense ?? "[]");
+
+    var pieColors = [
+        '#6366f1', '#10b981', '#f59e0b', '#f87171',
+        '#8b5cf6', '#14b8a6', '#ec4899', '#3b82f6'
+    ];
+
+    // Pie Chart
+    var pieCanvas = document.getElementById('pieChart');
+    if (pieCanvas && pieData.length > 0) {
+        new Chart(pieCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: pieColors,
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                    borderRadius: 6,
+                    spacing: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255,255,255,0.65)',
+                            padding: 12,
+                            font: { size: 11, weight: '500' },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                var value = context.raw || 0;
+                                var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                var percent = ((value / total) * 100).toFixed(1);
+                                return label + ': R' + value.toLocaleString() + ' (' + percent + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    } else if (pieCanvas) {
+        pieCanvas.parentElement.innerHTML =
+            '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.35);">' +
+            '<i class="fas fa-chart-pie" style="font-size:48px;margin-bottom:16px;display:block;opacity:0.5;"></i>' +
+            '<p>No expense data available</p>' +
+            '<small>Add expenses to see your spending breakdown</small>' +
+            '</div>';
+    }
+    </script>
+}

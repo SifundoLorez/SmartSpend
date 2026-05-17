@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37203.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartSpend", "SmartSpend.csproj", "{6899C47C-F823-4A89-8B90-FB1D2D1FBF23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6899C47C-F823-4A89-8B90-FB1D2D1FBF23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6899C47C-F823-4A89-8B90-FB1D2D1FBF23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6899C47C-F823-4A89-8B90-FB1D2D1FBF23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6899C47C-F823-4A89-8B90-FB1D2D1FBF23}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E14B4C27-1D0C-477A-A321-65253AFFF442}
+	EndGlobalSection
+EndGlobal

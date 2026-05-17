@@ -1,0 +1,778 @@
+﻿@using SmartSpend.ViewModels
+@{
+    ViewBag.Title = "Reports";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+    var byCategory = ViewBag.ByCategory as List<CategoryReportViewModel>;
+    var transactions = ViewBag.Transactions as List<SmartSpend.Models.Transaction>;
+    decimal totalIncome = ViewBag.TotalIncome != null ? (decimal)ViewBag.TotalIncome : 0m;
+    decimal totalExpenses = ViewBag.TotalExpenses != null ? (decimal)ViewBag.TotalExpenses : 0m;
+    decimal balance = ViewBag.Balance != null ? (decimal)ViewBag.Balance : 0m;
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+    .reports-main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .filter-bar {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        padding: 20px 24px;
+    }
+
+    .filter-select {
+        padding: 12px 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .filter-select:focus {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+        }
+
+        .filter-select option {
+            background: #1a1a2e;
+        }
+
+    .btn-filter {
+        padding: 12px 24px;
+        background: rgba(99,102,241,0.2);
+        border: 1px solid rgba(99,102,241,0.35);
+        color: #a5b4fc;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-filter:hover {
+            background: rgba(99,102,241,0.35);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+    .btn-export {
+        padding: 12px 24px;
+        background: rgba(16,185,129,0.12);
+        border: 1px solid rgba(16,185,129,0.3);
+        color: #34d399;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-export:hover {
+            background: rgba(16,185,129,0.2);
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .summary-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+
+        .summary-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+        }
+
+    .s-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .s-amount {
+        font-size: 32px;
+        font-weight: 800;
+    }
+
+    .income-amt {
+        color: #10b981;
+    }
+
+    .expense-amt {
+        color: #f87171;
+    }
+
+    .balance-amt {
+        color: #6366f1;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .chart-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 24px;
+    }
+
+    .chart-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.85);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .chart-title i {
+            color: #6366f1;
+        }
+
+    .breakdown-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .breakdown-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.02);
+    }
+
+        .breakdown-header i {
+            color: #6366f1;
+        }
+
+    .breakdown-row {
+        display: flex;
+        align-items: center;
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        gap: 16px;
+        transition: background 0.2s;
+    }
+
+        .breakdown-row:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-row:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+    .br-icon {
+        font-size: 22px;
+        width: 36px;
+        text-align: center;
+    }
+
+    .br-name {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .br-count {
+        font-size: 12px;
+        color: rgba(255,255,255,0.4);
+        min-width: 90px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .br-bar-wrap {
+        flex: 2;
+        height: 6px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 100px;
+        overflow: hidden;
+    }
+
+    .br-bar {
+        height: 100%;
+        border-radius: 100px;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    }
+
+    .br-amt {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f87171;
+        min-width: 110px;
+        text-align: right;
+    }
+
+    .table-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .table-header-row {
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.02);
+    }
+
+    .t-head {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr;
+        padding: 12px 24px;
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.4);
+    }
+
+    .t-row {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr;
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        align-items: center;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+
+        .t-row:last-child {
+            border-bottom: none;
+        }
+
+        .t-row:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .badge-inc {
+        background: rgba(16,185,129,0.12);
+        color: #34d399;
+    }
+
+    .badge-exp {
+        background: rgba(248,113,113,0.12);
+        color: #f87171;
+    }
+
+    .amt-inc {
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .amt-exp {
+        color: #f87171;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: rgba(255,255,255,0.35);
+    }
+
+        .empty-state i {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+    @@media (max-width: 1024px) {
+        .reports-main {
+            padding: 24px;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-grid {
+            gap: 16px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .reports-main {
+            padding: 20px 16px;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .t-head, .t-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    @@media print {
+        body {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        .sidebar, nav, .top-nav, .filter-bar,
+        .btn-export, .table-header-row span:last-child,
+        .sidebar-overlay {
+            display: none !important;
+        }
+
+        .reports-main {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .main-container {
+            padding-top: 0 !important;
+            margin-left: 0 !important;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(3,1fr) !important;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+
+        .summary-card, .chart-card, .breakdown-card,
+        .table-card {
+            background: #f8f8f8 !important;
+            border: 1px solid #ddd !important;
+            color: #000 !important;
+        }
+
+        .s-label, .chart-title, .breakdown-header,
+        .table-header-row, .t-head {
+            color: #333 !important;
+        }
+
+        .s-amount, .br-name, .t-row div {
+            color: #000 !important;
+        }
+
+        .income-amt {
+            color: #059669 !important;
+        }
+
+        .expense-amt {
+            color: #dc2626 !important;
+        }
+
+        .balance-amt {
+            color: #4f46e5 !important;
+        }
+
+        .amt-inc {
+            color: #059669 !important;
+        }
+
+        .amt-exp {
+            color: #dc2626 !important;
+        }
+
+        .br-bar {
+            background: #4f46e5 !important;
+        }
+
+        .badge-inc {
+            background: #d1fae5 !important;
+            color: #059669 !important;
+        }
+
+        .badge-exp {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+        }
+
+        .page-header h1, .page-header p {
+            color: #000 !important;
+        }
+
+        /* Print header */
+        .print-header {
+            display: block !important;
+        }
+    }
+
+    .print-header {
+        display: none;
+        text-align: center;
+        padding: 20px 0 30px;
+        border-bottom: 2px solid #4f46e5;
+        margin-bottom: 24px;
+    }
+
+        .print-header h1 {
+            font-size: 28px;
+            color: #4f46e5;
+            font-weight: 800;
+        }
+
+        .print-header p {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+</style>
+
+<div class="reports-main">
+    <!-- Print header (only shows when printing) -->
+    <div class="print-header">
+        <h1>💰 SmartSpend Financial Report</h1>
+        <p>@ViewBag.MonthName · Generated @DateTime.Now.ToString("dd MMM yyyy, HH:mm")</p>
+    </div>
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-chart-line" style="color:#6366f1;"></i>
+                Reports
+            </h1>
+            <p>
+                <i class="fas fa-calendar-alt"></i>
+                Financial summary for @ViewBag.MonthName
+            </p>
+        </div>
+        <a href="/Report/ExportCsv?month=@ViewBag.Month&year=@ViewBag.Year" class="btn-export">
+            <i class="fas fa-file-csv"></i> Export CSV
+        </a>
+        <button onclick="printReport()" class="btn-export"
+                style="background:rgba(99,102,241,0.12);
+                   border-color:rgba(99,102,241,0.3); color:#a5b4fc;">
+            <i class="fas fa-print"></i> Print / PDF
+        </button>
+    </div>
+
+    <!-- Month Filter -->
+    @using (Html.BeginForm("Index", "Report", FormMethod.Get))
+    {
+        <div class="filter-bar">
+            <select name="month" class="filter-select">
+                @for (int m = 1; m <= 12; m++)
+                {
+                    <option value="@m" @(m == (int)ViewBag.Month ? "selected" : "")>
+                        @(new DateTime(2000, m, 1).ToString("MMMM"))
+                    </option>
+                }
+            </select>
+            <select name="year" class="filter-select">
+                @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 3; y--)
+                {
+                    <option value="@y" @(y == (int)ViewBag.Year ? "selected" : "")>@y</option>
+                }
+            </select>
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-search"></i> View Report
+            </button>
+        </div>
+    }
+
+    <!-- Summary -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="s-label"><i class="fas fa-arrow-trend-up"></i> Total Income</div>
+            <div class="s-amount income-amt">R @totalIncome.ToString("N2")</div>
+        </div>
+        <div class="summary-card">
+            <div class="s-label"><i class="fas fa-arrow-trend-down"></i> Total Expenses</div>
+            <div class="s-amount expense-amt">R @totalExpenses.ToString("N2")</div>
+        </div>
+        <div class="summary-card">
+            <div class="s-label"><i class="fas fa-wallet"></i> Net Balance</div>
+            <div class="s-amount balance-amt">R @balance.ToString("N2")</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Expenses by Category</div>
+            <canvas id="catPie" height="260"></canvas>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-simple"></i> Income vs Expenses</div>
+            <canvas id="compareBar" height="260"></canvas>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    @if (byCategory != null && byCategory.Any())
+    {
+        decimal maxAmt = byCategory.Max(c => c.Amount);
+
+        <div class="breakdown-card">
+            <div class="breakdown-header">
+                <i class="fas fa-layer-group"></i> Spending by Category
+            </div>
+            @foreach (var c in byCategory)
+            {
+                double barW = maxAmt > 0 ? (double)(c.Amount / maxAmt * 100) : 0;
+                <div class="breakdown-row">
+                    <div class="br-icon">@c.Icon</div>
+                    <div class="br-name">@c.Name</div>
+                    <div class="br-count">
+                        <i class="fas fa-receipt"></i>
+                        @c.Count transaction@(c.Count == 1 ? "" : "s")
+                    </div>
+                    <div class="br-bar-wrap">
+                        <div class="br-bar" style="width:@barW%"></div>
+                    </div>
+                    <div class="br-amt">R @c.Amount.ToString("N2")</div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Transactions Table -->
+    <div class="table-card">
+        <div class="table-header-row">
+            <span><i class="fas fa-list" style="color:#6366f1;margin-right:8px;"></i>All Transactions</span>
+            <span style="font-size:13px;color:rgba(255,255,255,0.45);">
+                <i class="fas fa-database"></i> @(transactions?.Count ?? 0) records
+            </span>
+        </div>
+
+        @if (transactions == null || !transactions.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <p>No transactions for this period</p>
+            </div>
+        }
+        else
+        {
+            <div class="t-head">
+                <span><i class="fas fa-align-left"></i> Description</span>
+                <span><i class="fas fa-tags"></i> Category</span>
+                <span><i class="fas fa-chart-simple"></i> Type</span>
+                <span><i class="fas fa-coins"></i> Amount</span>
+            </div>
+            foreach (var t in transactions)
+            {
+                <div class="t-row">
+                    <div>
+                        <div style="font-weight:500;">
+                            @(string.IsNullOrEmpty(t.Description) ? "—" : t.Description)
+                        </div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;">
+                            <i class="fas fa-calendar-day"></i> @t.Date.ToString("dd MMM yyyy")
+                        </div>
+                    </div>
+                    <div>
+                        <span style="margin-right:6px;">@(t.Category?.Icon ?? "📦")</span>
+                        @(t.Category?.Name ?? "Uncategorized")
+                    </div>
+                    <div>
+                        <span class="badge @(t.Type == "Income" ? "badge-inc" : "badge-exp")">
+                            <i class="fas @(t.Type == "Income" ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+                            @t.Type
+                        </span>
+                    </div>
+                    <div class="@(t.Type == "Income" ? "amt-inc" : "amt-exp")">
+                        @(t.Type == "Income" ? "+" : "-") R @t.Amount.ToString("N2")
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function printReport() {
+            window.print();
+        }
+    var catLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+        byCategory?.Select(c => c.Name).ToList() ?? new List<string>()
+    ));
+    var catData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+        byCategory?.Select(c => c.Amount).ToList() ?? new List<decimal>()
+    ));
+
+    var pieColors = ['#6366f1','#10b981','#f59e0b','#f87171',
+                     '#8b5cf6','#14b8a6','#ec4899','#3b82f6'];
+
+    // Pie Chart
+    var pieCanvas = document.getElementById('catPie');
+    if (catData.length > 0) {
+        new Chart(pieCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catData,
+                    backgroundColor: pieColors,
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255,255,255,0.65)',
+                            padding: 12, font: { size: 11, weight: '500' },
+                            usePointStyle: true, pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                                var pct   = ((ctx.raw / total) * 100).toFixed(1);
+                                return ctx.label + ': R' + ctx.raw.toLocaleString() + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    } else {
+        pieCanvas.parentElement.innerHTML =
+            '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.35);">' +
+            '<i class="fas fa-chart-pie" style="font-size:48px;margin-bottom:16px;display:block;opacity:0.5;"></i>' +
+            '<p>No expense data available</p></div>';
+    }
+
+    // Bar Chart
+    new Chart(document.getElementById('compareBar'), {
+        type: 'bar',
+        data: {
+            labels: ['@ViewBag.MonthName'],
+            datasets: [
+                { label: 'Income',   data: [@totalIncome],   backgroundColor: 'rgba(16,185,129,0.75)',  borderRadius: 8, barPercentage: 0.6 },
+                { label: 'Expenses', data: [@totalExpenses], backgroundColor: 'rgba(248,113,113,0.75)', borderRadius: 8, barPercentage: 0.6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { color: 'rgba(255,255,255,0.65)', font: { size: 12 }, usePointStyle: true, padding: 15 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': R' + ctx.raw.toLocaleString()
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: 'rgba(255,255,255,0.5)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: {
+                    ticks: { color: 'rgba(255,255,255,0.5)', callback: v => 'R' + v.toLocaleString() },
+                    grid:  { color: 'rgba(255,255,255,0.05)' }
+                }
+            }
+        }
+    });
+    </script>
+}

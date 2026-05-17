@@ -1,0 +1,476 @@
+﻿@model IEnumerable<SmartSpend.Models.Category>
+
+@{
+    ViewBag.Title = "Categories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+}
+
+<style>
+    .main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+        .page-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .cat-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s;
+    }
+
+        .cat-card:hover {
+            background: rgba(255,255,255,0.07);
+            transform: translateY(-2px);
+        }
+
+    .cat-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cat-emoji {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: rgba(99,102,241,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .cat-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .cat-badge {
+        font-size: 11px;
+        color: rgba(255,255,255,0.35);
+        margin-top: 2px;
+    }
+
+    .cat-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-edit-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(99,102,241,0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99,102,241,0.2);
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+        .btn-edit-sm:hover {
+            background: rgba(99,102,241,0.3);
+            color: #fff;
+        }
+
+    .btn-del-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(248,113,113,0.1);
+        color: #f87171;
+        border: 1px solid rgba(248,113,113,0.2);
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+        .btn-del-sm:hover {
+            background: rgba(248,113,113,0.25);
+        }
+
+    /* Add form */
+    .add-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        padding: 24px;
+        position: sticky;
+        top: 100px;
+    }
+
+        .add-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 11px 14px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 9px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+    /* Emoji picker */
+    .emoji-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .emoji-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+        .emoji-btn:hover, .emoji-btn.selected {
+            background: rgba(99,102,241,0.2);
+            border-color: #6366f1;
+            transform: scale(1.1);
+        }
+
+    .btn-submit {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 0 20px rgba(99,102,241,0.3);
+        margin-top: 6px;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+    .error-msg {
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: rgba(248,113,113,0.1);
+        border: 1px solid rgba(248,113,113,0.3);
+        color: #f87171;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    /* Edit modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal {
+        background: #1a1a2e;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 32px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.5);
+        border-radius: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+</style>
+
+<div class="main">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-folder-open" style="color:#6366f1;margin-right:10px;"></i>Categories</h1>
+            <p>Manage your spending categories</p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="error-msg">
+            <i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="content-grid">
+
+        <!-- Category Grid -->
+        <div class="cat-grid">
+            @foreach (var cat in Model)
+            {
+                <div class="cat-card">
+                    <div class="cat-info">
+                        <div class="cat-emoji">@cat.Icon</div>
+                        <div>
+                            <div class="cat-name">@cat.Name</div>
+                            <div class="cat-badge">@(cat.IsDefault ? "Default" : "Custom")</div>
+                        </div>
+                    </div>
+                    <div class="cat-actions">
+                        <button class="btn-edit-sm"
+                                onclick="openEdit(@cat.Id, '@cat.Name', '@cat.Icon')"
+                                title="Edit">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        @using (Html.BeginForm("Delete", "Category", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@cat.Id" />
+                            <button type="submit" class="btn-del-sm"
+                                    onclick="return confirm('Delete this category?')"
+                                    title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Add Category Form -->
+        <div class="add-card">
+            <h3><i class="fas fa-plus-circle" style="color:#6366f1;"></i> Add Category</h3>
+
+            @using (Html.BeginForm("Add", "Category", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" name="name" class="form-control"
+                           placeholder="e.g. Gym, Petrol..." required />
+                </div>
+
+                <div class="form-group">
+                    <label>Icon (pick one)</label>
+                    <input type="hidden" name="icon" id="selectedIcon" value="📦" />
+                    <div class="emoji-grid" id="emojiGrid">
+                        @foreach (var emoji in new[] {
+                            "🍔","🚗","🏠","🎬","💊","📚","🛍️","💼",
+                            "✈️","🎮","🐶","☕","💇","🏋️","🎵","📦",
+                            "⚡","🌿","🍺","🎁","💻","📱","🏦","🔧"
+                        })
+                        {
+                            <button type="button" class="emoji-btn @(emoji == "📦" ? "selected" : "")"
+                                    onclick="selectEmoji(this, '@emoji')">
+                                @emoji
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save" style="margin-right:6px;"></i> Add Category
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <h3><i class="fas fa-pen" style="color:#6366f1;margin-right:8px;"></i> Edit Category</h3>
+
+        @using (Html.BeginForm("Edit", "Category", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="editId" />
+            <input type="hidden" name="icon" id="editIcon" value="📦" />
+
+            <div class="form-group">
+                <label>Category Name</label>
+                <input type="text" name="name" id="editName" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+                <label>Icon</label>
+                <div class="emoji-grid" id="editEmojiGrid">
+                    @foreach (var emoji in new[] {
+                        "🍔","🚗","🏠","🎬","💊","📚","🛍️","💼",
+                        "✈️","🎮","🐶","☕","💇","🏋️","🎵","📦",
+                        "⚡","🌿","🍺","🎁","💻","📱","🏦","🔧"
+                    })
+                    {
+                        <button type="button" class="emoji-btn"
+                                onclick="selectEditEmoji(this, '@emoji')">
+                            @emoji
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeEdit()">Cancel</button>
+                <button type="submit" class="btn-submit" style="flex:1;">
+                    <i class="fas fa-save" style="margin-right:6px;"></i> Save Changes
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>function selectEmoji(btn, emoji) {
+        document.querySelectorAll('#emojiGrid .emoji-btn')
+                .forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('selectedIcon').value = emoji;
+    }
+
+    function selectEditEmoji(btn, emoji) {
+        document.querySelectorAll('#editEmojiGrid .emoji-btn')
+                .forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('editIcon').value = emoji;
+    }
+
+    function openEdit(id, name, icon) {
+        document.getElementById('editId').value   = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editIcon').value = icon;
+
+        document.querySelectorAll('#editEmojiGrid .emoji-btn').forEach(btn => {
+            btn.classList.toggle('selected', btn.textContent.trim() === icon);
+        });
+
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEdit() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEdit();
+    });</script>
+}

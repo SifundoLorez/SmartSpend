@@ -1,0 +1,1063 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = true; // Show sidebar on dashboard
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSpend – Take Control of Your Money</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --purple: #6366f1;
+            --purple-dark: #4f46e5;
+            --green: #10b981;
+            --bg: #080812;
+            --bg2: #0f0f1a;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --text: #ffffff;
+            --muted: rgba(255,255,255,0.5);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ── Animated background ── */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .glow-1 {
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+            animation: floatGlow 12s ease-in-out infinite;
+        }
+
+        .glow-2 {
+            position: absolute;
+            top: 20%;
+            right: -15%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+            animation: floatGlow 15s ease-in-out infinite reverse;
+        }
+
+        .glow-3 {
+            position: absolute;
+            bottom: -10%;
+            left: 30%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+            animation: floatGlow 18s ease-in-out infinite 3s;
+        }
+
+        @@keyframes floatGlow {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.98);
+            }
+        }
+
+        /* Grid overlay */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Navbar ── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 16px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(8,8,18,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+            nav.scrolled {
+                padding: 12px 60px;
+                background: rgba(8,8,18,0.95);
+            }
+
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+            .nav-logo span {
+                color: var(--purple);
+            }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--purple), var(--green));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            color: var(--muted);
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+            .nav-link:hover {
+                color: #fff;
+                background: var(--card);
+            }
+
+        .nav-cta {
+            padding: 9px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--purple), #8b5cf6);
+            color: #fff;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(99,102,241,0.3);
+            border: 1px solid rgba(99,102,241,0.5);
+        }
+
+            .nav-cta:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 0 30px rgba(99,102,241,0.5);
+                color: #fff;
+                text-decoration: none;
+            }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 140px 24px 80px;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-bottom: 28px;
+            animation: fadeInDown 0.8s ease both;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--purple);
+            animation: pulseDot 2s infinite;
+        }
+
+        @@keyframes pulseDot {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(99,102,241,0.4);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+                box-shadow: 0 0 0 6px rgba(99,102,241,0);
+            }
+        }
+
+        .hero-title {
+            font-size: clamp(44px, 8vw, 88px);
+            font-weight: 900;
+            line-height: 1.0;
+            letter-spacing: -3px;
+            margin-bottom: 8px;
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+
+        .hero-title-line2 {
+            font-size: clamp(44px, 8vw, 88px);
+            font-weight: 900;
+            line-height: 1.0;
+            letter-spacing: -3px;
+            margin-bottom: 28px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--purple) 0%, #a78bfa 40%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: var(--muted);
+            max-width: 560px;
+            line-height: 1.7;
+            margin-bottom: 44px;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 80px;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .btn-primary {
+            padding: 16px 36px;
+            background: linear-gradient(135deg, var(--purple), #8b5cf6);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.25s;
+            box-shadow: 0 0 40px rgba(99,102,241,0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(99,102,241,0.5);
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 0 60px rgba(99,102,241,0.6);
+                color: #fff;
+                text-decoration: none;
+            }
+
+        .btn-secondary {
+            padding: 16px 36px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .btn-secondary:hover {
+                background: rgba(255,255,255,0.1);
+                border-color: rgba(255,255,255,0.2);
+                transform: translateY(-2px);
+                color: #fff;
+                text-decoration: none;
+            }
+
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            max-width: 680px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease 0.5s both;
+        }
+
+        .stat-item {
+            flex: 1;
+            padding: 24px 20px;
+            text-align: center;
+            border-right: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+            .stat-item:last-child {
+                border-right: none;
+            }
+
+            .stat-item:hover {
+                background: rgba(255,255,255,0.04);
+            }
+
+        .stat-val {
+            font-size: 30px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-lbl {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* ── Dashboard preview mockup ── */
+        .mockup-section {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 100px;
+            max-width: 1100px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .mockup-wrap {
+            position: relative;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(16,185,129,0.08));
+            border: 1px solid rgba(99,102,241,0.2);
+            border-radius: 24px;
+            padding: 3px;
+            box-shadow: 0 0 80px rgba(99,102,241,0.2);
+        }
+
+        .mockup-inner {
+            background: #0d0d1f;
+            border-radius: 22px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .mock-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: left;
+        }
+
+        .mock-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mock-value {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .mock-green {
+            color: #10b981;
+        }
+
+        .mock-red {
+            color: #f87171;
+        }
+
+        .mock-purple {
+            color: #a5b4fc;
+        }
+
+        .mock-bar-wrap {
+            grid-column: span 2;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        .mock-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 80px;
+            margin-top: 12px;
+        }
+
+        .mock-bar {
+            flex: 1;
+            border-radius: 6px 6px 0 0;
+            animation: growBar 1s ease both;
+        }
+
+        @@keyframes growBar {
+            from {
+                transform: scaleY(0);
+                transform-origin: bottom;
+            }
+
+            to {
+                transform: scaleY(1);
+                transform-origin: bottom;
+            }
+        }
+
+        .mock-insight {
+            grid-column: span 3;
+            background: rgba(99,102,241,0.08);
+            border: 1px solid rgba(99,102,241,0.2);
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 14px;
+            color: #a5b4fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── Features ── */
+        .features-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-eyebrow {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--purple);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(28px, 4vw, 46px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 12px;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 16px;
+            max-width: 500px;
+            margin: 0 auto 60px;
+            line-height: 1.7;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            transition: all 0.3s;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .feature-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, var(--purple), transparent);
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+            .feature-card:hover {
+                background: rgba(255,255,255,0.07);
+                border-color: rgba(99,102,241,0.3);
+                transform: translateY(-4px);
+            }
+
+                .feature-card:hover::before {
+                    opacity: 1;
+                }
+
+        .feat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 18px;
+        }
+
+        .feature-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ── How it works ── */
+        .steps-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+            .step-item:last-child {
+                border-bottom: none;
+            }
+
+        .step-num {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--purple), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(99,102,241,0.3);
+        }
+
+        .step-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .step-content p {
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── CTA ── */
+        .cta-section {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 120px;
+        }
+
+        .cta-card {
+            max-width: 760px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(16,185,129,0.08) 100%);
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: 28px;
+            padding: 64px 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .cta-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle at center, rgba(99,102,241,0.08) 0%, transparent 60%);
+                animation: rotateBg 20s linear infinite;
+            }
+
+        @@keyframes rotateBg {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cta-card h2 {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .cta-card p {
+            color: var(--muted);
+            font-size: 17px;
+            margin-bottom: 36px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .cta-btns {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        /* ── Footer ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 28px 24px;
+            color: rgba(255,255,255,0.2);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ── Animations ── */
+        @@keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(0.2, 0.9, 0.4, 1);
+        }
+
+            .reveal.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        /* ── Responsive ── */
+        @@media (max-width: 768px) {
+            nav {
+                padding: 14px 24px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mockup-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .mock-bar-wrap, .mock-insight {
+                grid-column: span 1;
+            }
+
+            .stats-row {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+
+            .stat-item {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+                .stat-item:last-child {
+                    border-bottom: none;
+                }
+
+            .cta-card {
+                padding: 40px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background -->
+    <div class="bg-glow">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="glow-3"></div>
+    </div>
+    <div class="bg-grid"></div>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <a class="nav-logo" href="/">
+            <div class="logo-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            Smart<span>Spend</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how" class="nav-link">How it works</a>
+            <a href="/Account/Login" class="nav-link">Login</a>
+            <a href="/Account/Register" class="nav-cta">
+                <i class="fas fa-rocket"></i> Get Started
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-eyebrow">
+            <span class="pulse-dot"></span>
+            <i class="fas fa-heart" style="color: #10b981;"></i> Built for South Africans
+        </div>
+
+        <h1 class="hero-title">Your money,</h1>
+        <h1 class="hero-title-line2">
+            <span class="gradient-text">under control.</span>
+        </h1>
+
+        <p class="hero-sub">
+            Track expenses, smash savings goals, manage subscriptions
+            and get AI-powered insights — all in one beautiful dashboard.
+        </p>
+
+        <div class="hero-actions">
+            <a href="/Account/Register" class="btn-primary">
+                <i class="fas fa-rocket"></i> Start for free
+            </a>
+            <a href="/Account/Login" class="btn-secondary">
+                <i class="fas fa-sign-in-alt"></i> Sign in
+            </a>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-val">R0</div>
+                <div class="stat-lbl"><i class="fas fa-tag"></i> Cost forever</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">∞</div>
+                <div class="stat-lbl"><i class="fas fa-infinity"></i> Transactions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">100%</div>
+                <div class="stat-lbl"><i class="fas fa-shield-alt"></i> Secure</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard mockup -->
+    <div class="mockup-section reveal">
+        <div class="mockup-wrap">
+            <div class="mockup-inner">
+                <div class="mock-card">
+                    <div class="mock-label"><i class="fas fa-arrow-trend-up"></i> Income</div>
+                    <div class="mock-value mock-green">R 24,500</div>
+                </div>
+                <div class="mock-card">
+                    <div class="mock-label"><i class="fas fa-arrow-trend-down"></i> Expenses</div>
+                    <div class="mock-value mock-red">R 18,230</div>
+                </div>
+                <div class="mock-card">
+                    <div class="mock-label"><i class="fas fa-wallet"></i> Balance</div>
+                    <div class="mock-value mock-purple">R 6,270</div>
+                </div>
+                <div class="mock-bar-wrap">
+                    <div class="mock-label"><i class="fas fa-chart-bar"></i> 6-Month Trend</div>
+                    <div class="mock-bars">
+                        <div class="mock-bar" style="height:45%; background:rgba(99,102,241,0.6); animation-delay:0.1s;"></div>
+                        <div class="mock-bar" style="height:60%; background:rgba(99,102,241,0.6); animation-delay:0.2s;"></div>
+                        <div class="mock-bar" style="height:40%; background:rgba(99,102,241,0.6); animation-delay:0.3s;"></div>
+                        <div class="mock-bar" style="height:75%; background:rgba(99,102,241,0.7); animation-delay:0.4s;"></div>
+                        <div class="mock-bar" style="height:55%; background:rgba(99,102,241,0.7); animation-delay:0.5s;"></div>
+                        <div class="mock-bar" style="height:90%; background:linear-gradient(180deg,#6366f1,#8b5cf6); animation-delay:0.6s;"></div>
+                    </div>
+                </div>
+                <div class="mock-card">
+                    <div class="mock-label"><i class="fas fa-bullseye"></i> Budget</div>
+                    <div style="margin-top:10px;">
+                        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:5px;"><i class="fas fa-utensils"></i> Food</div>
+                        <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;">
+                            <div style="height:100%;width:72%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;"></div>
+                        </div>
+                        <div style="font-size:11px;color:#fbbf24;margin-top:4px;">72% used</div>
+                    </div>
+                </div>
+                <div class="mock-insight">
+                    <i class="fas fa-brain" style="font-size:20px;"></i>
+                    <span><strong>Smart insight:</strong> You spent 12% less on food this month. You're on track!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section class="features-section" id="features">
+        <p class="section-eyebrow reveal">Everything you need</p>
+        <h2 class="section-title reveal">Built for real life</h2>
+        <p class="section-sub reveal">
+            Powerful tools to help you spend smarter,
+            save faster, and stress less about money.
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(99,102,241,0.15);"><i class="fas fa-chart-line"></i></div>
+                <h3>Live Dashboard</h3>
+                <p>Beautiful real-time charts showing income, expenses and balance at a glance.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-bullseye"></i></div>
+                <h3>Budget Control</h3>
+                <p>Set monthly limits per category and get warned before you overspend.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(245,158,11,0.15);"><i class="fas fa-brain"></i></div>
+                <h3>Smart Insights</h3>
+                <p>Automatic spending analysis comparing this month to last month.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(236,72,153,0.15);"><i class="fas fa-sync-alt"></i></div>
+                <h3>Recurring Transactions</h3>
+                <p>Set up rent and salary once — SmartSpend auto-adds them every month.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(59,130,246,0.15);"><i class="fas fa-tv"></i></div>
+                <h3>Subscription Tracker</h3>
+                <p>Track Netflix, Spotify, DStv and more. Get reminded before billing dates.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(139,92,246,0.15);"><i class="fas fa-piggy-bank"></i></div>
+                <h3>Savings Goals</h3>
+                <p>Set goals like buying a car or holiday. Track your progress visually.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(20,184,166,0.15);"><i class="fas fa-exchange-alt"></i></div>
+                <h3>Currency Converter</h3>
+                <p>Convert ZAR to USD, GBP, EUR and more with live exchange rates.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(248,113,113,0.15);"><i class="fas fa-bell"></i></div>
+                <h3>Smart Notifications</h3>
+                <p>Budget alerts, subscription reminders and goal deadlines — all in one place.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feat-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-file-pdf"></i></div>
+                <h3>PDF Reports</h3>
+                <p>Generate beautiful monthly reports and export them as PDF or CSV.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="steps-section" id="how">
+        <p class="section-eyebrow reveal">Simple process</p>
+        <h2 class="section-title reveal">How it works</h2>
+        <p class="section-sub reveal">Up and running in under 2 minutes</p>
+
+        <div class="steps-list">
+            <div class="step-item reveal">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h3><i class="fas fa-user-plus" style="margin-right: 8px; color: #a5b4fc;"></i> Create your free account</h3>
+                    <p>Register with your South African ID number — SmartSpend auto-detects your age and gender so you don't have to type them.</p>
+                </div>
+            </div>
+            <div class="step-item reveal">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h3><i class="fas fa-coins" style="margin-right: 8px; color: #a5b4fc;"></i> Add your income and expenses</h3>
+                    <p>Log transactions manually or set up recurring ones. Categories are pre-loaded so you can start immediately.</p>
+                </div>
+            </div>
+            <div class="step-item reveal">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h3><i class="fas fa-chart-line" style="margin-right: 8px; color: #a5b4fc;"></i> Set budgets and goals</h3>
+                    <p>Tell SmartSpend how much you want to spend per category each month and what you're saving toward.</p>
+                </div>
+            </div>
+            <div class="step-item reveal">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <h3><i class="fas fa-lightbulb" style="margin-right: 8px; color: #a5b4fc;"></i> Get insights and take control</h3>
+                    <p>SmartSpend analyses your spending and tells you exactly where your money is going — and how to improve.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="cta-card reveal">
+            <h2>Ready to spend smarter?</h2>
+            <p>
+                Join SmartSpend today — completely free,
+                built for South Africans, no credit card needed.
+            </p>
+            <div class="cta-btns">
+                <a href="/Account/Register" class="btn-primary">
+                    <i class="fas fa-user-plus"></i> Create free account
+                </a>
+                <a href="/Account/Login" class="btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Already have an account
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar')
+                .classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((e, i) => {
+                if (e.isIntersecting) {
+                    setTimeout(() => e.target.classList.add('visible'), i * 80);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                document.querySelector(a.getAttribute('href'))
+                    ?.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+
+</body>
+</html>

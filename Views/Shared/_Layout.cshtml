@@ -1,0 +1,734 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSpend - @ViewBag.Title</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+            /* Animated Gradient Background */
+            body::before {
+                content: '';
+                position: fixed;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(16,185,129,0.12) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(139,92,246,0.1) 0%, transparent 50%);
+                z-index: 0;
+                pointer-events: none;
+                animation: backgroundShift 20s ease-in-out infinite;
+            }
+
+        @@keyframes backgroundShift {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(2%, 2%);
+            }
+        }
+
+        /* Page Transition Animation */
+        .page-transition {
+            animation: pageFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @@keyframes pageFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes pageFadeOutDown {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        .page-exit {
+            animation: pageFadeOutDown 0.3s ease-out forwards;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 15, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 1000;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .menu-toggle {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ffffff;
+            font-size: 20px;
+        }
+
+            .menu-toggle:hover {
+                background: rgba(99, 102, 241, 0.2);
+                border-color: #6366f1;
+                transform: scale(1.02);
+            }
+
+            /* Hide menu toggle on non-dashboard pages */
+            .menu-toggle.hidden {
+                display: none;
+            }
+
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .nav-logo span {
+                color: #6366f1;
+            }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #6366f1, #10b981);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-link-custom {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+            .nav-link-custom:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: #ffffff;
+                text-decoration: none;
+                transform: translateY(-1px);
+            }
+
+        .btn-nav-solid {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #ffffff;
+            transition: all 0.2s;
+        }
+
+            .btn-nav-solid:hover {
+                opacity: 0.88;
+                transform: translateY(-1px);
+                color: #ffffff;
+                text-decoration: none;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            }
+
+        .user-avatar-top {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .user-avatar-top:hover {
+                transform: scale(1.05);
+            }
+
+        /* Sidebar - Only visible on dashboard */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(20, 20, 35, 0.95);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            z-index: 1001;
+            padding: 80px 20px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            /* Sidebar hidden by default, shown only on dashboard pages */
+            .sidebar.hide-sidebar {
+                display: none;
+            }
+
+        /* Overlay when sidebar is open */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        /* Sidebar Navigation Items */
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 6px;
+        }
+
+            .sidebar-item:hover {
+                background: rgba(255, 255, 255, 0.06);
+                color: #ffffff;
+                transform: translateX(4px);
+            }
+
+            .sidebar-item.active {
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+                color: #ffffff;
+                border: 1px solid rgba(99, 102, 241, 0.25);
+            }
+
+            .sidebar-item i {
+                width: 24px;
+                font-size: 18px;
+            }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+            margin-top: auto;
+        }
+
+        .logout-item {
+            color: rgba(248, 113, 113, 0.7);
+        }
+
+            .logout-item:hover {
+                background: rgba(248, 113, 113, 0.1);
+                color: #f87171;
+            }
+
+        /* Main Content */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-top: 80px;
+            transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        /* Footer */
+        .smart-footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 24px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 60px;
+        }
+
+        /* Loading Overlay */
+        .page-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 26, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .page-loading.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: #a5b4fc;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        @@keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .top-nav {
+                padding: 12px 20px;
+            }
+
+            .nav-logo .logo-text {
+                display: none;
+            }
+
+            .sidebar {
+                width: 260px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="page-loading">
+        <div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">LOADING</div>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar - Conditionally shown only on dashboard pages -->
+    <div id="sidebar" class="sidebar @(ViewBag.HideSidebar == true ? "hide-sidebar" : "")">
+        <div class="sidebar-nav">
+            <a href="@Url.Action("Index", "Dashboard")" class="sidebar-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="@Url.Action("Index", "SavingsGoal")" class="sidebar-item">
+                <i class="fas fa-piggy-bank"></i>
+                <span>Savings Goals</span>
+            </a>
+            <a href="@Url.Action("Index", "Transaction")" class="sidebar-item">
+                <i class="fas fa-list-ul"></i>
+                <span>Transactions</span>
+            </a>
+            <a href="@Url.Action("Index", "Budget")" class="sidebar-item">
+                <i class="fas fa-bullseye"></i>
+                <span>Budgets</span>
+            </a>
+            <a href="@Url.Action("Index", "Category")" class="sidebar-item">
+                <i class="fas fa-folder-open"></i>
+                <span>Categories</span>
+            </a>
+            <a href="@Url.Action("Index", "Subscription")" class="sidebar-item">
+                <i class="fas fa-rss"></i>
+                <span>Subscriptions</span>
+            </a>
+            <a href="@Url.Action("Index", "Currency")" class="sidebar-item">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Currency</span>
+            </a>
+            <a href="@Url.Action("Index", "Report")" class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+            <a href="@Url.Action("Index", "Settings")" class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-item user-info-sidebar" style="cursor: default; background: rgba(255,255,255,0.03); margin-bottom: 10px;">
+                <i class="fas fa-user-circle"></i>
+                <div>
+                    <div style="font-weight: 600; color: white;">@(ViewBag.UserName ?? "User")</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.4);">Personal Account</div>
+                </div>
+            </div>
+            <a href="@Url.Action("Logout", "Account")" class="sidebar-item logout-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="menu-toggle @(ViewBag.HideSidebar == true ? "hidden" : "")" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="nav-logo" href="@Url.Action("Index", "Home")">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">Smart<span>Spend</span></span>
+            </a>
+        </div>
+        <div class="nav-right">
+            @{
+                bool isAuthenticated = User?.Identity?.IsAuthenticated == true
+                                    || !string.IsNullOrEmpty(ViewBag.UserName as string);
+            }
+            @if (isAuthenticated)
+            {
+                <!-- Notification bell -->
+                <a href="@Url.Action("Index", "Notification")"
+                   style="position:relative; text-decoration:none; margin-right:4px;">
+                    <div style="width:40px; height:40px; border-radius:10px;
+                        background:rgba(255,255,255,0.05);
+                        border:1px solid rgba(255,255,255,0.1);
+                        display:flex; align-items:center; justify-content:center;
+                        color:rgba(255,255,255,0.7); font-size:16px;
+                        transition:all 0.2s;" id="bellBtn">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <span id="notifBadge"
+                          style="display:none; position:absolute; top:-4px; right:-4px;
+                         width:18px; height:18px; border-radius:50%;
+                         background:#f87171; color:#fff;
+                         font-size:10px; font-weight:700;
+                         align-items:center; justify-content:center;">
+                    </span>
+                </a>
+
+                <div class="user-avatar-top" title="@ViewBag.UserName">
+                    @((ViewBag.UserName?.ToString() ?? "U").Substring(0, 1).ToUpper())
+                </div>
+                <a href="@Url.Action("Index", "Profile")" class="nav-link-custom">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="@Url.Action("Logout", "Account")"
+                   class="nav-link-custom"
+                   style="border-color:rgba(248,113,113,0.3);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Login",    "Account")" class="nav-link-custom">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="@Url.Action("Register", "Account")" class="btn-nav-solid">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+            }
+        </div>
+    </nav>
+
+    <!-- Main Content with Page Transition -->
+    <div id="mainContent" class="main-container page-transition">
+        @RenderBody()
+    </div>
+
+    <!-- Footer -->
+    <footer class="smart-footer">
+        <p><i class="fas fa-copyright"></i> @DateTime.Now.Year SmartSpend · Built for South Africa <i class="fas fa-heart" style="color: #10b981;"></i></p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Sidebar & Page Transition JavaScript -->
+    <script>
+        (function () {
+            'use strict';
+
+            // Sidebar functionality - only if sidebar exists and is not hidden
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuToggle = document.getElementById('menuToggle');
+
+            // Only initialize sidebar if menuToggle exists (not hidden)
+            if (menuToggle && sidebar && !sidebar.classList.contains('hide-sidebar')) {
+                function openSidebar() {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeSidebar() {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                function toggleSidebar() {
+                    if (sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                }
+
+                menuToggle.addEventListener('click', toggleSidebar);
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+
+                // Close sidebar on escape key
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    }
+                });
+            }
+
+            // Page Transition functionality
+            let isTransitioning = false;
+            const mainContent = document.getElementById('mainContent');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            setTimeout(() => {
+                if (mainContent) {
+                    mainContent.classList.remove('page-transition');
+                }
+            }, 500);
+
+            function showLoading() {
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('active');
+                }
+            }
+
+            function hideLoading() {
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('active');
+                }
+            }
+
+            // Intercept internal link clicks (excluding sidebar toggle)
+            document.addEventListener('click', function (e) {
+                let target = e.target;
+                while (target && target.tagName !== 'A') {
+                    target = target.parentElement;
+                }
+
+                if (!target) return;
+
+                // Skip sidebar toggle button
+                if (target.id === 'menuToggle' || target.closest('#menuToggle')) {
+                    return;
+                }
+
+                const href = target.getAttribute('href');
+
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) {
+                    return;
+                }
+
+                if (target.hostname && target.hostname !== window.location.hostname) {
+                    return;
+                }
+
+                if (target.getAttribute('target') === '_blank') {
+                    return;
+                }
+
+                if (e.ctrlKey || e.metaKey) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                if (isTransitioning) return;
+                isTransitioning = true;
+
+                // Close sidebar if open before navigating
+                if (sidebar && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    if (overlay) overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                showLoading();
+
+                if (mainContent) {
+                    mainContent.classList.add('page-exit');
+                }
+
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
+
+            window.addEventListener('pageshow', function (event) {
+                isTransitioning = false;
+                hideLoading();
+
+                if (sidebar && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    if (overlay) overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                if (mainContent) {
+                    mainContent.classList.remove('page-exit');
+                    mainContent.classList.add('page-transition');
+
+                    setTimeout(() => {
+                        mainContent.classList.remove('page-transition');
+                    }, 500);
+                }
+            });
+
+            window.addEventListener('load', function () {
+                setTimeout(() => {
+                    hideLoading();
+                }, 200);
+            });
+        })();
+    </script>
+    <script>
+        // Poll for unread notification count
+        function checkNotifications() {
+            fetch('/Notification/UnreadCount')
+                .then(r => r.json())
+                .then(data => {
+                    var count = data.count || 0;
+                    var badge = document.getElementById('notifBadge');
+                    var bell = document.getElementById('bellBtn');
+                    if (badge) {
+                        if (count > 0) {
+                            badge.style.display = 'flex';
+                            badge.textContent = count > 9 ? '9+' : count;
+                            if (bell) bell.style.color = '#f87171';
+                        } else {
+                            badge.style.display = 'none';
+                            if (bell) bell.style.color = 'rgba(255,255,255,0.7)';
+                        }
+                    }
+                })
+                .catch(() => { });
+        }
+
+        checkNotifications();
+        setInterval(checkNotifications, 60000);
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

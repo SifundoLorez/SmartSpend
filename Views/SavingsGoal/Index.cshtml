@@ -1,0 +1,770 @@
+﻿@using SmartSpend.ViewModels
+@{
+    ViewBag.Title = "Savings Goals";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+
+    var goals = ViewBag.Goals as System.Collections.Generic.List<SavingsGoalViewModel>;
+    decimal totTarget = ViewBag.TotalTarget != null ? (decimal)ViewBag.TotalTarget : 0m;
+    decimal totSaved = ViewBag.TotalSaved != null ? (decimal)ViewBag.TotalSaved : 0m;
+}
+
+<style>
+    .goals-main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 6px;
+        }
+
+    /* Summary pills */
+    .summary-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .summary-pill {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.2s;
+    }
+
+        .summary-pill:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-1px);
+        }
+
+    .pill-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .pill-label {
+        font-size: 12px;
+        color: rgba(255,255,255,0.4);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pill-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    /* Layout */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* Goal cards */
+    .goals-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .goal-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 24px;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .goal-card.completed::before {
+            background: linear-gradient(180deg, #10b981, #34d399);
+        }
+
+        .goal-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+            border-color: rgba(99,102,241,0.2);
+        }
+
+    .goal-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+    .goal-identity {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .goal-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: rgba(99,102,241,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        flex-shrink: 0;
+    }
+
+        .goal-icon.completed-icon {
+            background: rgba(16,185,129,0.15);
+        }
+
+    .goal-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+
+    .goal-date {
+        font-size: 12px;
+        color: rgba(255,255,255,0.4);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .goal-amounts {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .goal-saved {
+        font-size: 22px;
+        font-weight: 800;
+        color: #6366f1;
+    }
+
+    .goal-target {
+        font-size: 13px;
+        color: rgba(255,255,255,0.35);
+        margin-top: 3px;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+        height: 10px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 100px;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        transition: width 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        min-width: 0%;
+    }
+
+        .progress-bar.done {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .progress-bar.warning {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+    .goal-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .pct-badge {
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 100px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .pct-badge.normal {
+            background: rgba(99,102,241,0.12);
+            color: #a5b4fc;
+        }
+
+        .pct-badge.warning {
+            background: rgba(245,158,11,0.12);
+            color: #fbbf24;
+        }
+
+        .pct-badge.complete {
+            background: rgba(16,185,129,0.12);
+            color: #34d399;
+        }
+
+    .remain-label {
+        font-size: 13px;
+        color: rgba(255,255,255,0.4);
+    }
+
+    .completed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 100px;
+        background: rgba(16,185,129,0.12);
+        color: #34d399;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* Add funds form */
+    .add-funds-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px;
+        padding: 10px 14px;
+    }
+
+    .funds-input {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .funds-input:focus {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+        }
+
+        .funds-input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+    .btn-add-funds {
+        padding: 8px 18px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add-funds:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+    /* Delete button */
+    .goal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    .btn-delete-sm {
+        padding: 7px 14px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.04);
+        color: rgba(255,255,255,0.4);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        font-size: 12px;
+        font-family: inherit;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-delete-sm:hover {
+            background: rgba(248,113,113,0.1);
+            color: #f87171;
+            border-color: rgba(248,113,113,0.2);
+        }
+
+    /* Add form panel */
+    .add-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 28px;
+        position: sticky;
+        top: 100px;
+    }
+
+        .add-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 11px 14px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+    /* Emoji picker */
+    .emoji-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .emoji-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+        .emoji-btn:hover {
+            background: rgba(99,102,241,0.15);
+            border-color: rgba(99,102,241,0.3);
+        }
+
+        .emoji-btn.selected {
+            background: rgba(99,102,241,0.25);
+            border-color: #6366f1;
+            transform: scale(1.1);
+        }
+
+    .btn-submit {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(99,102,241,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 6px;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+    }
+
+        .empty-state i {
+            font-size: 52px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .empty-state small {
+            font-size: 13px;
+            color: rgba(255,255,255,0.2);
+        }
+
+    @@media (max-width: 1100px) {
+        .goals-main {
+            padding: 24px;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-card {
+            position: static;
+            max-width: 500px;
+        }
+
+        .summary-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .goals-main {
+            padding: 20px 16px;
+        }
+
+        .summary-row {
+            grid-template-columns: 1fr;
+        }
+
+        .goal-top {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .goal-amounts {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="goals-main">
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-piggy-bank" style="color:#6366f1;"></i>
+                Savings Goals
+            </h1>
+            <p>Set targets and track your progress</p>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+        <div class="summary-pill">
+            <div class="pill-icon" style="background:rgba(99,102,241,0.15);">
+                <i class="fas fa-flag" style="color:#a5b4fc;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Total Goals</div>
+                <div class="pill-value">@(goals?.Count ?? 0)</div>
+            </div>
+        </div>
+        <div class="summary-pill">
+            <div class="pill-icon" style="background:rgba(16,185,129,0.15);">
+                <i class="fas fa-piggy-bank" style="color:#10b981;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Total Saved</div>
+                <div class="pill-value">R @totSaved.ToString("N2")</div>
+            </div>
+        </div>
+        <div class="summary-pill">
+            <div class="pill-icon" style="background:rgba(245,158,11,0.15);">
+                <i class="fas fa-bullseye" style="color:#fbbf24;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Total Target</div>
+                <div class="pill-value">R @totTarget.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+
+        <!-- Goals List -->
+        <div class="goals-list">
+            @if (goals == null || !goals.Any())
+            {
+                <div class="empty-state">
+                    <i class="fas fa-piggy-bank"></i>
+                    <p>No savings goals yet</p>
+                    <small>Set your first goal using the form →</small>
+                </div>
+            }
+            else
+            {
+                foreach (var g in goals)
+                {
+                    double barWidth = (double)g.Percentage;
+
+                    string barClass = g.IsCompleted ? "done"
+                                     : g.Percentage >= 75 ? "warning"
+                                     : "";
+
+                    string pctClass = g.IsCompleted ? "complete"
+                                     : g.Percentage >= 75 ? "warning"
+                                     : "normal";
+
+                    string cardClass = g.IsCompleted ? "completed" : "";
+
+                    <div class="goal-card @cardClass">
+                        <div class="goal-top">
+                            <div class="goal-identity">
+                                <div class="goal-icon @(g.IsCompleted ? "completed-icon" : "")">
+                                    @g.Icon
+                                </div>
+                                <div>
+                                    <div class="goal-name">@g.Name</div>
+                                    @if (g.TargetDate.HasValue)
+                                    {
+                                        <div class="goal-date">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            Target: @g.TargetDate.Value.ToString("dd MMM yyyy")
+                                            @if (g.DaysLeft > 0 && !g.IsCompleted)
+                                            {
+                                                <span style="color:#fbbf24; margin-left:4px;">
+                                                    (@g.DaysLeft days left)
+                                                </span>
+                                            }
+                                            else if (g.DaysLeft == 0 && !g.IsCompleted)
+                                            {
+                                                <span style="color:#f87171; margin-left:4px;">(Due today!)</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="goal-amounts">
+                                <div class="goal-saved">R @g.SavedAmount.ToString("N2")</div>
+                                <div class="goal-target">of R @g.TargetAmount.ToString("N2")</div>
+                            </div>
+                        </div>
+
+                        <!-- Progress bar -->
+                        <div class="progress-wrap">
+                            <div class="progress-bar @barClass"
+                                 style="width: @barWidth.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%">
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="goal-footer">
+                            <span class="pct-badge @pctClass">
+                                <i class="fas fa-chart-line"></i>
+                                @g.Percentage.ToString("F1")% complete
+                            </span>
+
+                            @if (g.IsCompleted)
+                            {
+                                <span class="completed-badge">
+                                    <i class="fas fa-check-circle"></i> Goal Reached!
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="remain-label">
+                                    <i class="fas fa-coins" style="margin-right:4px;color:rgba(255,255,255,0.3);"></i>
+                                    R @g.Remaining.ToString("N2") remaining
+                                </span>
+                            }
+                        </div>
+
+                        <!-- Add Funds -->
+                        @if (!g.IsCompleted)
+                        {
+                            using (Html.BeginForm("AddFunds", "SavingsGoal", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@g.Id" />
+                                <div class="add-funds-row">
+                                    <input type="number" name="amount"
+                                           step="0.01" min="0.01"
+                                           class="funds-input"
+                                           placeholder="Add funds (R)..." required />
+                                    <button type="submit" class="btn-add-funds">
+                                        <i class="fas fa-plus"></i> Add Funds
+                                    </button>
+                                </div>
+                            }
+                        }
+
+                        <!-- Delete -->
+                        <div class="goal-actions">
+                            @using (Html.BeginForm("Delete", "SavingsGoal", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@g.Id" />
+                                <button type="submit" class="btn-delete-sm"
+                                        onclick="return confirm('Delete this savings goal?')">
+                                    <i class="fas fa-trash"></i> Delete Goal
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Add Goal Form -->
+        <div class="add-card">
+            <h3>
+                <i class="fas fa-plus-circle" style="color:#6366f1;"></i>
+                New Goal
+            </h3>
+
+            @using (Html.BeginForm("Add", "SavingsGoal", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Goal Name</label>
+                    <input type="text" name="name" class="form-control"
+                           placeholder="e.g. Buy a car, Holiday trip..." required />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-smile"></i> Icon</label>
+                    <input type="hidden" name="icon" id="selectedGoalIcon" value="🎯" />
+                    <div class="emoji-grid" id="goalEmojiGrid">
+                        @foreach (var emoji in new[] {
+                            "🎯","🚗","🏠","✈️","💻","📱","🎓","💍",
+                            "🏋️","🎮","🌴","💰","🛒","🐶","🎵","🏖️"
+                        })
+                        {
+                            <button type="button"
+                                    class="emoji-btn @(emoji == "🎯" ? "selected" : "")"
+                                    onclick="selectGoalEmoji(this, '@emoji')">
+                                @emoji
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-coins"></i> Target Amount (R)</label>
+                    <input type="number" name="targetAmount"
+                           step="0.01" min="1"
+                           class="form-control"
+                           placeholder="e.g. 50000.00" required />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Target Date (optional)</label>
+                    <input type="date" name="targetDate" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Create Goal
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function selectGoalEmoji(btn, emoji) {
+            document.querySelectorAll('#goalEmojiGrid .emoji-btn')
+                .forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('selectedGoalIcon').value = emoji;
+        }
+    </script>
+}

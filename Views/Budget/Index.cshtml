@@ -1,0 +1,451 @@
+﻿@using SmartSpend.ViewModels
+@{
+    ViewBag.Title = "Budgets";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+    var summary = ViewBag.Summary as List<BudgetSummaryViewModel>;
+}
+
+<style>
+    .budgets-main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 28px;
+        align-items: start;
+    }
+
+    .budget-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .budget-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 24px;
+        transition: all 0.3s ease;
+    }
+
+        .budget-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+            border-color: rgba(99,102,241,0.2);
+        }
+
+    .budget-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .budget-name {
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .budget-amounts {
+        font-size: 14px;
+        color: rgba(255,255,255,0.5);
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+    }
+
+        .budget-amounts .spent {
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .budget-amounts .limit {
+            color: rgba(255,255,255,0.4);
+        }
+
+    .progress-wrap {
+        height: 8px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 100px;
+        transition: width 0.6s cubic-bezier(0.2,0.9,0.4,1.1);
+    }
+
+    .bar-safe {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .bar-warning {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .bar-danger {
+        background: linear-gradient(90deg, #f87171, #ef4444);
+    }
+
+    .budget-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .budget-status {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 100px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-safe {
+        background: rgba(16,185,129,0.12);
+        color: #34d399;
+    }
+
+    .status-warning {
+        background: rgba(245,158,11,0.12);
+        color: #fbbf24;
+    }
+
+    .status-danger {
+        background: rgba(248,113,113,0.12);
+        color: #f87171;
+    }
+
+    .remaining-amount {
+        font-size: 13px;
+        color: rgba(255,255,255,0.45);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-delete-sm {
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: rgba(248,113,113,0.1);
+        color: #f87171;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid rgba(248,113,113,0.2);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-delete-sm:hover {
+            background: rgba(248,113,113,0.2);
+            transform: translateY(-1px);
+        }
+
+    .add-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 28px;
+        position: sticky;
+        top: 100px;
+    }
+
+        .add-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.55);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 14px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .form-control option {
+            background: #1a1a2e;
+        }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(99,102,241,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        color: rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+    }
+
+        .empty-state i {
+            font-size: 56px;
+            margin-bottom: 20px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state small {
+            font-size: 13px;
+            color: rgba(255,255,255,0.25);
+        }
+
+    .error-msg {
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: rgba(248,113,113,0.1);
+        border: 1px solid rgba(248,113,113,0.3);
+        color: #f87171;
+        font-size: 14px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @@media (max-width: 1024px) {
+        .budgets-main {
+            padding: 24px;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-card {
+            position: static;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .budgets-main {
+            padding: 20px 16px;
+        }
+    }
+</style>
+
+<div class="budgets-main">
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-bullseye" style="color:#6366f1;"></i>
+                Budgets
+            </h1>
+            <p>
+                <i class="fas fa-calendar-alt"></i>
+                @ViewBag.MonthName — Set spending limits per category
+            </p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="error-msg">
+            <i class="fas fa-exclamation-triangle"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="content-grid">
+
+        <!-- Budget List -->
+        <div class="budget-list">
+            @if (summary == null || !summary.Any())
+            {
+                <div class="empty-state">
+                    <i class="fas fa-chart-line"></i>
+                    <p>No budgets set for this month</p>
+                    <small>Add a budget using the form on the right →</small>
+                </div>
+            }
+            else
+            {
+                foreach (var item in summary)
+                {
+                    string barClass = item.Percent >= 100 ? "bar-danger" : item.Percent >= 80 ? "bar-warning" : "bar-safe";
+                    string statusClass = item.Percent >= 100 ? "status-danger" : item.Percent >= 80 ? "status-warning" : "status-safe";
+                    string statusText = item.Percent >= 100 ? "Exceeded" : item.Percent >= 80 ? "Warning" : "On Track";
+                    string statusIcon = item.Percent >= 100 ? "fas fa-exclamation-circle" : item.Percent >= 80 ? "fas fa-clock" : "fas fa-check-circle";
+                    double barWidth = Math.Min((double)item.Percent, 100);
+
+                    <div class="budget-card">
+                        <div class="budget-top">
+                            <div class="budget-name">
+                                <span style="font-size:20px;">@item.CategoryIcon</span>
+                                @item.CategoryName
+                            </div>
+                            <div class="budget-amounts">
+                                <span class="spent">R @item.Spent.ToString("N2")</span>
+                                <span class="limit">/ R @item.LimitAmount.ToString("N2")</span>
+                            </div>
+                        </div>
+
+                        <div class="progress-wrap">
+                            <div class="progress-bar @barClass" style="width:@barWidth%"></div>
+                        </div>
+
+                        <div class="budget-footer">
+                            <span class="budget-status @statusClass">
+                                <i class="@statusIcon"></i>
+                                @statusText — @item.Percent.ToString("0")% used
+                            </span>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <span class="remaining-amount">
+                                    <i class="fas fa-wallet"></i>
+                                    R @(item.Remaining > 0 ? item.Remaining.ToString("N2") : "0.00") left
+                                </span>
+                                @using (Html.BeginForm("Delete", "Budget", FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.BudgetId" />
+                                    <button type="submit" class="btn-delete-sm"
+                                            onclick="return confirm('Remove this budget?')">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Add Budget Form -->
+        <div class="add-card">
+            <h3>
+                <i class="fas fa-plus-circle" style="color:#6366f1;"></i>
+                Set Budget
+            </h3>
+
+            @using (Html.BeginForm("Add", "Budget", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label><i class="fas fa-tags"></i> Category</label>
+                    <select name="categoryId" class="form-control" required>
+                        <option value="">-- Select Category --</option>
+                        @foreach (var cat in (List<SmartSpend.Models.Category>)ViewBag.Categories)
+                        {
+                            <option value="@cat.Id">@cat.Icon @cat.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-coins"></i> Monthly Limit (R)</label>
+                    <input type="number" name="limitAmount" step="0.01" min="1"
+                           class="form-control" placeholder="e.g. 2000.00" required />
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Save Budget
+                </button>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,863 @@
+﻿@using SmartSpend.Models
+@{
+    ViewBag.Title = "Subscriptions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideSidebar = false;
+    var subscriptions = ViewBag.Subscriptions as System.Collections.Generic.List<Subscription>;
+    decimal totalMonthly = ViewBag.TotalMonthly != null ? (decimal)ViewBag.TotalMonthly : 0m;
+    decimal totalYearly = ViewBag.TotalYearly != null ? (decimal)ViewBag.TotalYearly : 0m;
+}
+
+<style>
+    .subs-main {
+        padding: 36px 40px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 6px;
+        }
+
+    /* Summary pills */
+    .summary-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .summary-pill {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.2s;
+    }
+
+        .summary-pill:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-1px);
+        }
+
+    .pill-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+        .pill-icon.purple {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .pill-icon.green {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .pill-icon.amber {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+    .pill-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pill-amount {
+        font-size: 22px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    /* Layout */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* Subscription cards */
+    .subs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .sub-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 18px;
+        padding: 20px 22px;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .sub-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #6366f1, #8b5cf6);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .sub-card.cancel-flag::before {
+            background: linear-gradient(180deg, #f87171, #ef4444);
+        }
+
+        .sub-card.inactive {
+            opacity: 0.5;
+        }
+
+        .sub-card.urgent::before {
+            background: linear-gradient(180deg, #f59e0b, #fbbf24);
+        }
+
+        .sub-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-1px);
+        }
+
+    .sub-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .sub-identity {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    /* Service Icon Styles */
+    .sub-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+        /* Brand-specific icon backgrounds */
+        .sub-icon.spotify {
+            background: #1DB954;
+            color: #191414;
+        }
+
+        .sub-icon.youtube {
+            background: #FF0000;
+            color: white;
+        }
+
+        .sub-icon.netflix {
+            background: #E50914;
+            color: white;
+        }
+
+        .sub-icon.apple-music {
+            background: #FA243C;
+            color: white;
+        }
+
+        .sub-icon.showmax {
+            background: #ED1C24;
+            color: white;
+        }
+
+        .sub-icon.disney {
+            background: #0063e5;
+            color: white;
+        }
+
+        .sub-icon.dstv {
+            background: #0066CC;
+            color: white;
+        }
+
+        .sub-icon.prime {
+            background: #00A8E1;
+            color: white;
+        }
+
+        .sub-icon.default {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+    .sub-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .sub-freq {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .sub-amount {
+        font-size: 22px;
+        font-weight: 800;
+        color: #ffffff;
+    }
+
+    .sub-per {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.35);
+        margin-top: 2px;
+        text-align: right;
+    }
+
+    /* Billing info */
+    .sub-billing {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .billing-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .billing-label {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .billing-date {
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .days-chip {
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .days-urgent {
+        background: rgba(248, 113, 113, 0.15);
+        color: #f87171;
+    }
+
+    .days-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .days-safe {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    /* Cancel flag banner */
+    .cancel-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: rgba(248, 113, 113, 0.1);
+        border: 1px solid rgba(248, 113, 113, 0.2);
+        font-size: 13px;
+        color: #f87171;
+        margin-bottom: 14px;
+        font-weight: 500;
+    }
+
+    /* Actions */
+    .sub-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        border: 1px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-cancel-flag {
+        background: rgba(248, 113, 113, 0.1);
+        color: #f87171;
+        border-color: rgba(248, 113, 113, 0.2);
+    }
+
+        .btn-cancel-flag:hover {
+            background: rgba(248, 113, 113, 0.22);
+        }
+
+    .btn-unflag {
+        background: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+        .btn-unflag:hover {
+            background: rgba(16, 185, 129, 0.22);
+        }
+
+    .btn-pause {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+
+        .btn-pause:hover {
+            background: rgba(245, 158, 11, 0.22);
+        }
+
+    .btn-delete {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.4);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+        .btn-delete:hover {
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.2);
+        }
+
+    /* Add form */
+    .add-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+        padding: 28px;
+        position: sticky;
+        top: 100px;
+    }
+
+        .add-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 11px 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.08);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-control option {
+            background: #1a1a2e;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+    .custom-name-group {
+        display: none;
+        margin-top: 10px;
+    }
+
+    /* Service icons in selector */
+    .service-preview {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 10px;
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+        .service-preview.show {
+            display: flex;
+        }
+
+    .btn-submit {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+    }
+
+        .empty-state i {
+            font-size: 52px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .empty-state small {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+    /* Service selector options styling */
+    select.form-control option {
+        padding: 10px;
+    }
+
+    @@media (max-width: 1100px) {
+        .subs-main {
+            padding: 24px;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-card {
+            position: static;
+            max-width: 500px;
+        }
+
+        .summary-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .subs-main {
+            padding: 20px 16px;
+        }
+
+        .summary-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@functions {
+    public static string GetIconClass(string serviceName)
+    {
+        if (serviceName == null) return "default";
+
+        string name = serviceName.ToLower();
+
+        if (name == "spotify") return "spotify";
+        if (name == "youtube") return "youtube";
+        if (name == "netflix") return "netflix";
+        if (name == "apple music") return "apple-music";
+        if (name == "showmax") return "showmax";
+        if (name == "disney+") return "disney";
+        if (name == "dstv") return "dstv";
+        if (name == "amazon prime") return "prime";
+
+        return "default";
+    }
+
+    public static string GetIconHtml(string serviceName)
+    {
+        if (serviceName == null) return "<i class='fas fa-rss'></i>";
+
+        string name = serviceName.ToLower();
+
+        if (name == "spotify") return "<i class='fab fa-spotify'></i>";
+        if (name == "youtube") return "<i class='fab fa-youtube'></i>";
+        if (name == "netflix") return "<i class='fas fa-film'></i>";
+        if (name == "apple music") return "<i class='fab fa-apple'></i>";
+        if (name == "showmax") return "<i class='fas fa-tv'></i>";
+        if (name == "disney+") return "<i class='fas fa-star'></i>";
+        if (name == "dstv") return "<i class='fas fa-satellite-dish'></i>";
+        if (name == "amazon prime") return "<i class='fab fa-amazon'></i>";
+
+        return "<i class='fas fa-rss'></i>";
+    }
+}
+
+<div class="subs-main">
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="fas fa-rss" style="color:#6366f1;"></i>
+                Subscriptions
+            </h1>
+            <p>Track your recurring services and billing dates</p>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+        <div class="summary-pill">
+            <div class="pill-icon purple">
+                <i class="fas fa-calendar-check" style="color:#a5b4fc;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Active Subscriptions</div>
+                <div class="pill-amount">
+                    @(subscriptions?.Count(s => s.IsActive) ?? 0)
+                </div>
+            </div>
+        </div>
+        <div class="summary-pill">
+            <div class="pill-icon green">
+                <i class="fas fa-coins" style="color:#10b981;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Monthly Cost</div>
+                <div class="pill-amount">R @totalMonthly.ToString("N2")</div>
+            </div>
+        </div>
+        <div class="summary-pill">
+            <div class="pill-icon amber">
+                <i class="fas fa-chart-line" style="color:#fbbf24;"></i>
+            </div>
+            <div>
+                <div class="pill-label">Yearly Cost</div>
+                <div class="pill-amount">R @totalYearly.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+
+        <!-- Subscription List -->
+        <div class="subs-list">
+            @if (subscriptions == null || !subscriptions.Any())
+            {
+                <div class="empty-state">
+                    <i class="fas fa-rss"></i>
+                    <p>No subscriptions tracked yet</p>
+                    <small>Add your first subscription using the form →</small>
+                </div>
+            }
+            else
+            {
+                foreach (var s in subscriptions)
+                {
+                    int daysLeft = (s.NextBillingDate - DateTime.Today).Days;
+                    string daysClass = daysLeft <= 3 ? "days-urgent"
+                                     : daysLeft <= 7 ? "days-warning"
+                                     : "days-safe";
+                    string daysText = daysLeft == 0 ? "Due today!"
+                                    : daysLeft == 1 ? "Due tomorrow!"
+                                    : daysLeft < 0 ? "Overdue"
+                                    : $"{daysLeft} days left";
+
+                    string cardClass = s.WantToCancel ? "cancel-flag"
+                                      : !s.IsActive ? "inactive"
+                                      : daysLeft <= 3 ? "urgent"
+                                      : "";
+
+                    // Get the appropriate icon class based on service name
+                    string iconClass = GetIconClass(s.DisplayName);
+                    string iconHtml = GetIconHtml(s.DisplayName);
+
+                    <div class="sub-card @cardClass">
+                        <div class="sub-top">
+                            <div class="sub-identity">
+                                <div class="sub-icon @iconClass">
+                                    @Html.Raw(iconHtml)
+                                </div>
+                                <div>
+                                    <div class="sub-name">@s.DisplayName</div>
+                                    <div class="sub-freq">
+                                        <i class="fas fa-sync-alt"></i>
+                                        @s.Frequency billing
+                                        @if (!s.IsActive)
+                                        {
+                                            <span style="color:#f87171; margin-left:6px;">
+                                                <i class="fas fa-pause-circle"></i> Paused
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div class="sub-amount">R @s.Amount.ToString("N2")</div>
+                                <div class="sub-per">per @s.Frequency.ToLower()</div>
+                            </div>
+                        </div>
+
+                        <!-- Billing date row -->
+                        <div class="sub-billing">
+                            <div class="billing-info">
+                                <i class="fas fa-calendar-alt" style="color:#a5b4fc;"></i>
+                                <span class="billing-label">Next billing:</span>
+                                <span class="billing-date">
+                                    @s.NextBillingDate.ToString("dd MMM yyyy")
+                                </span>
+                            </div>
+                            <span class="days-chip @daysClass">
+                                <i class="fas fa-clock"></i> @daysText
+                            </span>
+                        </div>
+
+                        <!-- Cancel flag banner -->
+                        @if (s.WantToCancel)
+                        {
+                            <div class="cancel-banner">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Flagged for cancellation — cancel before
+                                <strong style="margin-left:4px;">
+                                    @s.NextBillingDate.ToString("dd MMM yyyy")
+                                </strong>
+                            </div>
+                        }
+
+                        <!-- Actions -->
+                        <div class="sub-actions">
+                            @using (Html.BeginForm("ToggleCancel", "Subscription", FormMethod.Post, new { style = "display:inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@s.Id" />
+                                <button type="submit" class="btn-action @(s.WantToCancel ? "btn-unflag" : "btn-cancel-flag")">
+                                    <i class="fas @(s.WantToCancel ? "fa-check-circle" : "fa-times-circle")"></i>
+                                    @(s.WantToCancel ? "Remove flag" : "Flag to cancel")
+                                </button>
+                            }
+
+                            @using (Html.BeginForm("ToggleActive", "Subscription", FormMethod.Post, new { style = "display:inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@s.Id" />
+                                <button type="submit" class="btn-action btn-pause">
+                                    <i class="fas @(s.IsActive ? "fa-pause" : "fa-play")"></i>
+                                    @(s.IsActive ? "Pause" : "Resume")
+                                </button>
+                            }
+
+                            @using (Html.BeginForm("Delete", "Subscription", FormMethod.Post, new { style = "display:inline;" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@s.Id" />
+                                <button type="submit" class="btn-action btn-delete"
+                                        onclick="return confirm('Remove @s.DisplayName subscription?')">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Add Form -->
+        <div class="add-card">
+            <h3>
+                <i class="fas fa-plus-circle" style="color:#6366f1;"></i>
+                Add Subscription
+            </h3>
+
+            @using (Html.BeginForm("Add", "Subscription", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label><i class="fas fa-tv"></i> Service</label>
+                    <select name="ServiceName" id="serviceSelect"
+                            class="form-control" required onchange="onServiceChange(this)">
+                        <option value="">-- Select Service --</option>
+                        <option value="Spotify">🎵 Spotify</option>
+                        <option value="YouTube">▶️ YouTube Premium</option>
+                        <option value="Netflix">🎬 Netflix</option>
+                        <option value="Apple Music">🍎 Apple Music</option>
+                        <option value="Showmax">📺 Showmax</option>
+                        <option value="Disney+">✨ Disney+</option>
+                        <option value="DStv">📡 DStv</option>
+                        <option value="Amazon Prime">📦 Amazon Prime</option>
+                        <option value="Other">🔔 Other (Custom)</option>
+                    </select>
+
+                    <!-- Service preview badge -->
+                    <div class="service-preview" id="servicePreview">
+                        <span id="previewIcon" style="font-size:24px;"></span>
+                        <span id="previewName" style="color:rgba(255,255,255,0.8);"></span>
+                    </div>
+
+                    <!-- Custom name input -->
+                    <div class="custom-name-group" id="customNameGroup">
+                        <input type="text" name="CustomName"
+                               class="form-control" placeholder="Enter service name..." />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-coins"></i> Amount (R)</label>
+                    <input type="number" name="Amount" step="0.01" min="0.01"
+                           class="form-control" placeholder="e.g. 99.00" required />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Next Billing Date</label>
+                    <input type="date" name="NextBillingDate"
+                           class="form-control"
+                           value="@DateTime.Today.AddMonths(1).ToString("yyyy-MM-dd")"
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-sync-alt"></i> Billing Frequency</label>
+                    <select name="Frequency" class="form-control">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Yearly">Yearly</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Add Subscription
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        var serviceIcons = {
+            'Spotify': '🎵',
+            'YouTube': '▶️',
+            'Netflix': '🎬',
+            'Apple Music': '🍎',
+            'Showmax': '📺',
+            'Disney+': '✨',
+            'DStv': '📡',
+            'Amazon Prime': '📦',
+            'Other': '🔔'
+        };
+
+        function onServiceChange(select) {
+            var val = select.value;
+            var preview = document.getElementById('servicePreview');
+            var icon = document.getElementById('previewIcon');
+            var name = document.getElementById('previewName');
+            var custom = document.getElementById('customNameGroup');
+
+            if (val && val !== 'Other') {
+                icon.textContent = serviceIcons[val] || '🔔';
+                name.textContent = val;
+                preview.classList.add('show');
+                custom.style.display = 'none';
+            } else if (val === 'Other') {
+                icon.textContent = '🔔';
+                name.textContent = 'Custom service';
+                preview.classList.add('show');
+                custom.style.display = 'block';
+            } else {
+                preview.classList.remove('show');
+                custom.style.display = 'none';
+            }
+        }
+    </script>
+}
